@@ -1,0 +1,74 @@
+//segment tree updates precisely doesn,t add
+
+struct DataSet
+{
+    lli sum;
+};
+
+const lli N = 1e5 + 5;
+DataSet segtree[4 * N];
+
+DataSet combine(DataSet l, DataSet r)
+{
+    DataSet res;
+    res.sum = (l.sum + r.sum)%MOD;
+    return res;
+}
+
+DataSet make_dataSet(lli val)
+{
+    DataSet res;
+    res.sum = val;
+    return res;
+}
+
+void build(vector<lli> &a, lli root, lli arrleft, lli arrright)
+{
+    if (arrleft == arrright)
+    {
+        segtree[root] = make_dataSet(a[arrleft]);
+    }
+    else
+    {
+        lli arrmid = (arrleft + arrright) / 2;
+        build(a, root * 2, arrleft, arrmid);
+        build(a, root * 2 + 1, arrmid + 1, arrright);
+        segtree[root] = combine(segtree[root * 2], segtree[root * 2 + 1]);
+    }
+}
+
+void point_update(lli root, lli arrleft, lli arrright, lli pos, lli new_val)
+{
+    if ((arrleft > pos) || (arrright < pos))
+        return;
+    if (arrleft == arrright)
+    {
+        // cout<<arrleft<<" upd "<<new_val<<"\n";
+        segtree[root] = make_dataSet(new_val);
+    }
+    else
+    {
+        lli arrmid = (arrleft + arrright) / 2;
+        // if (pos <= arrmid)
+        point_update(root * 2, arrleft, arrmid, pos, new_val);
+        // else
+        point_update(root * 2 + 1, arrmid + 1, arrright, pos, new_val);
+        segtree[root] = combine(segtree[root * 2], segtree[root * 2 + 1]);
+    }
+}
+
+DataSet query(lli root, lli arrleft, lli arrright, lli L, lli R)
+{
+
+    // root has a connection to arrleft or arrright not with quL or quR
+    if ((L > R) || (arrleft > arrright))
+        return make_dataSet(0);
+    if ((L <= arrleft) && (R >= arrright))
+        return segtree[root];
+    if ((L > arrright) || (R < arrleft))
+        return make_dataSet(0);
+
+    lli arrmid = (arrleft + arrright) / 2;
+    return combine(query(root * 2, arrleft, arrmid, L, R),
+                   query(root * 2 + 1, arrmid + 1, arrright, L, R));
+}
