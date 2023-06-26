@@ -239,3 +239,44 @@ vector<lli> segmentedSieve(lli low, lli high)
 
     return primesinsegment;
 }
+
+struct matrix
+{
+    lli sz = 55;
+    lli arr[55][55];
+};
+
+matrix matrix_multiply(matrix mat1, matrix mat2, lli sz)
+{
+    // multiply two square matrix of same size
+    matrix tmp;
+
+    for (int i = 0; i < sz; i++)
+    {
+        for (int j = 0; j < sz; j++)
+        {
+            tmp.arr[i][j] = 0;
+
+            for (int k = 0; k < sz; k++)
+            {
+                tmp.arr[i][j] += (mat1.arr[i][k] * mat2.arr[k][j]);
+            }
+        }
+    }
+    return tmp;
+}
+matrix matrix_pow(matrix m, lli pw, lli sz)
+{
+    // binary exponentiation of matrix
+    if (pw == 1)
+        return m;
+
+    matrix tmp = matrix_pow(m, pw / 2, sz);
+    tmp = matrix_multiply(tmp, tmp, sz);
+
+    if (pw % 2 == 1)
+    {
+        tmp = matrix_multiply(tmp, m, sz);
+    }
+    return tmp;
+}
