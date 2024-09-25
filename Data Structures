@@ -1,0 +1,192 @@
+const int MAX=1005;
+const int logmax=20;
+int bit[MAX][MAX];
+bool vis[MAX][MAX];
+
+void FenwickTree2D(vector<vector<int>> const &a, int r, int c){
+    // remember memset can be used alone for faster approach
+    // also this function is unchecked.use carefully. 
+    memset(bit,0,sizeof(bit));
+    for (int i = 0; i <= r; i++)
+        bit[i][0] = 0;
+    
+    for (int j = 0; j <= c; j++)
+        bit[0][j] = 0;
+    
+    for (int i = 1; i <= r; i++){
+        for (int j = 1; j <= c; j++){
+            bit[i][j] += a[i][j];
+            int upi = i + (i & (-i));
+            int upj = j + (j & (-j));
+            if (upi <= r && upj <= c)
+                bit[upi][upj] += bit[i][j];
+        }
+    }
+}
+int sum(int x, int y){
+    int ret = 0;
+    for (int i = x; i > 0; i -= (i & (-i))){
+        for (int j = y; j > 0; j -= (j & (-j)))
+            ret += bit[i][j];
+    }
+    return ret;
+}
+int matrix_sum(int x1, int y1, int x2, int y2){
+    return (sum(x2, y2) - sum(x1 - 1, y2) - sum(x2, y1 - 1) + sum(x1 - 1, y1 - 1));
+}
+
+void add(int x, int y, int delta, int r, int c){
+    for (int i = x; i <= r; i += (i & (-i))){
+        for (int j = y; j <= c; j += (j & (-j)))
+            bit[i][j] += delta;
+    }
+}
+// to use this BIT matrix array has to be 1 based, queries are 1 based
+// no need to incereament r c
+
+
+int sparsetable[MAX][MAX][logmax][logmax];
+// for 1d st[i][j] stores max from i to i+2^j-1
+// whereas fentree[i] stores i-(2^poslastbit(i))+1 to i
+
+void build(vector<vector<int>> &v, int r, int c){
+    for (int i = 0; i < r; i++){
+        for (int j = 0; j < c; j++){
+            sparsetable[i][j][0][0] = v[i][j];
+        }
+    }
+    for (int k = 1; k <= (int)log2(r); k++){
+        for (int i = 0; i + (1 << k) - 1 < r; i++){
+            for (int j = 0; j < c; j++){
+                sparsetable[i][j][k][0] = max(sparsetable[i][j][k - 1][0],
+                                              sparsetable[i + (1 << (k - 1))][j][k - 1][0]);
+            }
+        }
+    }
+
+    for (int k = 1; k <= (int)log2(c); k++){
+        for (int i = 0; i < r; i++){
+            for (int j = 0; j + (1 << k) - 1 < c; j++){
+                sparsetable[i][j][0][k] = max(sparsetable[i][j][0][k - 1],
+                                              sparsetable[i][j + (1 << (k - 1))][0][k - 1]);
+            }
+        }
+    }
+    for (int k = 1; k <= (int)log2(r); k++){
+        for (int l = 1; l <= (int)log2(c); l++){
+            for (int i = 0; i + (1 << k) - 1 < r; i++){
+                for (int j = 0; j + (1 << l) - 1 < c; j++){
+                    sparsetable[i][j][k][l] = max(max(sparsetable[i][j][k - 1][l - 1],
+                                                      sparsetable[i + (1 << (k - 1))][j][k - 1][l - 1]),
+                                                  max(sparsetable[i][j + (1 << (l - 1))][k - 1][l - 1],
+                                                      sparsetable[i + (1 << (k - 1))][j + (1 << (l - 1))][k - 1][l - 1]));
+                }
+            }
+        }
+    }
+    //the nodes which are 0 or garb are never reached
+}
+
+int rmq(int x1, int y1, int x2, int y2){
+    int k = log2(x2 - x1 + 1);
+    int l = log2(y2 - y1 + 1);
+    return max(max(sparsetable[x1][y1][k][l],
+                   sparsetable[x2 - (1 << k) + 1][y1][k][l]),
+               max(sparsetable[x1][y2 - (1 << l) + 1][k][l],
+                   sparsetable[x2 - (1 << k) + 1][y2 - (1 << l) + 1][k][l]));
+}
+int sp_parent[MAX][logmax];
+int sp_min[MAX][logmax];
+int sp_max[MAX][logmax];
+vector<pint> adj[MAX];
+vector<int> level(MAX);
+// lca with path min and max(in same code) in a static tree using sparse table
+void dfs(int node,int par,int l){
+    sp_parent[node][0]=par;
+    level[node]=l;
+    for(auto child:adj[node]){
+        if(child.first==par)
+        continue;
+        sp_min[child.first][0]=child.second;
+        sp_max[child.first][0]=child.second;
+        dfs(child.first,node,l+1);
+    }
+}
+
+void buildsp(int n){
+    memset(sp_parent,-1,sizeof(sp_parent));
+    dfs(1,-1,1);
+
+    for(int i=1;i<=log2(n);i++){
+        for(int j=1;j<=n;j++){//change it if index 0 based
+            if(sp_parent[j][i-1]!=-1){
+                sp_parent[j][i]=sp_parent[sp_parent[j][i-1]][i-1];
+                sp_min[j][i]=min(sp_min[j][i-1],sp_min[sp_parent[j][i-1]][i-1]);
+                sp_max[j][i]=max(sp_max[j][i-1],sp_max[sp_parent[j][i-1]][i-1]);
+            }
+        }
+    } 
+}
+
+pint query(int p,int q){
+    if(level[p]<level[q])
+    swap(p,q);
+     // q er level always kom
+    int up=log2(level[p]);
+    int mn=MOD;
+    int mx=-1;
+     // making level equal,kinda binary search;
+    for(int i=up;i>=0;i--){
+        if((level[p]-(1<<i))>=level[q]){
+            mn=min(mn,sp_min[p][i]);
+            mx=max(mx,sp_max[p][i]);
+            p=sp_parent[p][i];
+        }
+    }
+     // ekta arektar ancestor kina
+    if(p==q)
+    return {mn,mx};
+     // na hole abar binary search kora jabe karon ekta level por duijoner ancestor soman hobe
+    for(int i=up;i>=0;i--){
+        if((sp_parent[p][i]!=-1) && (sp_parent[p][i]!=sp_parent[q][i])){
+            mn=min(mn,min(sp_min[p][i],sp_min[q][i]));
+            mx=max(mx,max(sp_max[p][i],sp_max[q][i]));
+            p=sp_parent[p][i];
+            q=sp_parent[q][i];
+
+        }
+    }
+    mn=min(mn,min(sp_min[p][0],sp_min[q][0]));
+    mx=max(mx,max(sp_max[p][0],sp_max[q][0]));
+    return {mn,mx};
+}
+
+vector<int> parent(MAX);
+vector<int> _rank(MAX);
+int find_root(int node){
+    if(parent[node]==node)
+    return node;
+    int root=find_root(parent[node]);
+    parent[node]=root;
+    return root;
+}
+
+void set_union(int node1,int node2){
+    int ancs1=find_root(node1);
+    int ancs2=find_root(node2);
+    if(ancs1==ancs2)
+        return;
+    if(_rank[ancs1]>_rank[ancs2]){ parent[ancs2]=ancs1;}
+    else if(_rank[ancs1]<_rank[ancs2]){ parent[ancs1]=ancs2;}
+    else{
+        _rank[ancs1]++;
+        parent[ancs2]=ancs1;
+    }
+}
+
+void initialize(int n){
+    for(int i=0;i<=n;i++){
+        parent[i]=i;
+        _rank[i]=0;
+    }
+}
