@@ -1,0 +1,76 @@
+
+lli binExp(lli base, lli exp,lli mod){
+    base %= mod;
+    if(base<0) base+=mod;
+    lli res = 1;
+    while (exp > 0){
+        if (exp & 1){
+            res = ((long long)res * base % mod);
+        }
+        base = ((long long)base * base % mod);
+        exp >>= 1;
+    }
+    return res;
+}
+//double hash
+const lli N=200005;
+
+const lli mod1=127657753;
+const lli p1=137;
+lli power1[N];//powers of p
+lli invpower1[N]; //inverse powers of p
+
+const lli mod2=987654319;
+const lli  p2=277;
+lli power2[N];
+lli invpower2[N];
+
+void precalc(){
+    power1[0]=1;
+    for(lli i=1;i<N;i++){
+        power1[i]=(1LL*power1[i-1]*p1)%mod1;
+    }
+    lli ip1=binExp(p1,mod1-2,mod1);
+    invpower1[0]=1;
+    for(lli i=1;i<N;i++){
+        invpower1[i]=(1LL*invpower1[i-1]*ip1)%mod1;
+    }
+
+    power2[0]=1;
+    for(lli i=1;i<N;i++){
+        power2[i]=(1LL*power2[i-1]*p2)%mod2;
+    }
+    lli ip2=binExp(p2,mod2-2,mod2);
+    invpower2[0]=1;
+    for(lli i=1;i<N;i++){
+        invpower2[i]=(1LL*invpower2[i-1]*ip2)%mod2;
+    }
+}
+
+struct Hashing{
+    lli sz;
+    string hashString; 
+    vector<pair<lli,lli>> hashValtill; // 1 indexed,pair for 2 hash values
+
+    Hashing(){};
+    Hashing(string toHash){
+        sz=toHash.size();
+        hashString=toHash;
+        hashValtill.push_back({0,0});
+        //this can be done using segment tree in logn time
+        for(lli i=0;i<sz;i++){
+            pair<lli,lli> tmp;
+            tmp.first=(hashValtill[i].first+(1LL*power1[i]*hashString[i])%mod1)%mod1;
+            tmp.second=(hashValtill[i].second+(1LL*power2[i]*hashString[i])%mod2)%mod2;
+            hashValtill.push_back(tmp); //watch doing s[0]+s[1]*p+s[2]*p^2.....
+        }
+    }
+    pair<lli,lli> getHash(lli L,lli R){ //1 indexed , returns both hash values
+        assert(1<=L && L<=R && R<=sz);
+        pair<lli,lli> ans;
+        ans.first=((hashValtill[R].first-hashValtill[L-1].first+mod1)*1LL*invpower1[L-1])%mod1;
+        ans.second=((hashValtill[R].second-hashValtill[L-1].second+mod2)*1LL*invpower2[L-1])%mod2;
+        return ans;
+    }
+};
+
