@@ -203,3 +203,58 @@ vector<int> prefix_function(string s) {
     }
     return pi;
 }//pi[i]=max length of proper prefix-suffix ending at i
+const int ALPHABETSIZE = 26;
+int getID(char ch){
+    return ch-'A';
+}
+struct TrieNode {
+    int child[ALPHABETSIZE];
+    int count;
+    int depth;
+    TrieNode() {
+        count=0;
+        depth=0;
+        fill(begin(child), end(child), -1);
+    }
+};
+
+vector<TrieNode> trie(1);
+void add_string(string &s){
+    // adds new character with a full array of ALPHABETSIZE
+    int index = 0;
+    for (char ch : s) {
+        int c = getID(ch);
+         if (trie[index].child[c] == -1) {
+            trie[index].child[c] = trie.size();
+            trie.emplace_back();
+        }
+        int prev=trie[index].depth;
+        index = trie[index].child[c];
+        trie[index].count++;
+        trie[index].depth=prev+1; 
+    }
+}
+void remove_string(string &s){
+    //assumes that the string is already inserted in trie
+    int index = 0;
+    for (char ch : s) {
+        int c = getID(ch);
+        index = trie[index].child[c];
+        trie[index].count--;
+    }
+    //if(trie[index].count<=0)
+    //trie[index].isEndofWord = false;
+}
+int find_string(string &s){
+    // part after || added because of remove
+    // may omit if no remove operation 
+    int index = 0;
+    for (char ch : s) {
+        int c = getID(ch);
+         if (trie[index].child[c] == -1){        // || trie[trie[index].child[c]].count<=0) {
+            return 0;
+        }
+        index = trie[index].child[c];
+    }
+    return trie[index].count;
+}
