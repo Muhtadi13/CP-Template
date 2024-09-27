@@ -202,4 +202,4 @@ vector<int> prefix_function(string s) {
         pi[i] = j;
     }
     return pi;
-}//pi[i]=max length of proper prefix-suffix
+}//pi[i]=max length of proper prefix-suffix ending at i
