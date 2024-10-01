@@ -97,7 +97,7 @@ lli gcd(lli a, lli b){
 
 lli gcdExtended(lli a, lli b, lli *x, lli *y){
     // ax+by=gcd(a,b);
-    // solution to linear diophantine equation ax+by=c where gcd(a,b)|c
+    // solution to linear diophantine equation ax+by=c where gcd(a,b)|c .....bezouts identity for integer solution
     if (b == 0){
         *x = 1;
         *y = 0;
