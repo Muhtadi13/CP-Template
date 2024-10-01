@@ -123,8 +123,8 @@ vector<int> manacher(string s) {
     auto res = manacher_odd(t + "#");
     return vector<int>(begin(res) + 1, end(res) - 1);
 }
-//prefix-trie
-//substring-KMP
-//pallindrome-Manacher
+//prefix-trie,hash
+//substring-KMP,hash
+//pallindrome-Manacher,hash
 
 
