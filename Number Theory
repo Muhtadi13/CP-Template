@@ -254,3 +254,4 @@ lli query(lli pos){
     return ans;
 }
 //a+b = a^b + 2*(a&b)
+//modulo ring 1,2,3,4,5.... 9 * 8 mod 10=x, x is a multiple of gcd(8,10) 
