@@ -98,6 +98,7 @@ lli gcd(lli a, lli b){
 lli gcdExtended(lli a, lli b, lli *x, lli *y){
     // ax+by=gcd(a,b);
     // solution to linear diophantine equation ax+by=c where gcd(a,b)|c .....bezouts identity for integer solution
+    
     if (b == 0){
         *x = 1;
         *y = 0;
@@ -112,6 +113,7 @@ lli gcdExtended(lli a, lli b, lli *x, lli *y){
 
 lli modInverse(lli num, lli M){
     lli x, y;
+    //co-prime a,M -> ax+M*y=1 mod M ....tai gcd 1 hote hobe
     lli g = gcdExtended(num, M, &x, &y);
     if (g != 1){
         // no inverse exists
