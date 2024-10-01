@@ -74,3 +74,29 @@ struct Hashing{
     }
 };
 
+//root tree hash
+
+const int N=200005;
+vector<int> hashval(N);
+map<vector<int>,int> hashIfChildHash;
+vector<int> adj[N];
+
+int getHash(vector<int> &v){
+    if(hashIfChildHash.find(v)==hashIfChildHash.end()){
+        hashIfChildHash[v]=hashIfChildHash.size();
+    }
+    return hashIfChildHash[v];
+}
+
+void calcHash(int par,int node){
+    vector<int> hashes;
+    for(auto child:adj[node]){
+        if(child==par) continue;
+        calcHash(node,child);
+        hashes.push_back(hashval[child]);
+    }
+    sort(hashes.begin(),hashes.end());
+    hashval[node]=getHash(hashes);
+}
+
+
