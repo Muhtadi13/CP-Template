@@ -257,3 +257,9 @@ lli query(lli pos){
 }
 //a+b = a^b + 2*(a&b)
 //modulo ring 1,2,3,4,5.... 9 * 8 mod 10=x, x is a multiple of gcd(8,10) 
+/*for (int i=0; i<K; i++) {
+    for (int mask = 0; mask < (1<<K); mask++) {
+        if ((mask & (1<<i)) == 0)
+            a[mask] += a[mask^(1<<i)];
+    }
+} mask value propagation from 1111,1101,0111->to 0101*/
